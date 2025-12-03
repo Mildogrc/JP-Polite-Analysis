@@ -21,7 +21,11 @@ class PolitenessModel(nn.Module):
             raise ValueError("model_size must be 'base' or 'large'")
             
         print(f"Loading {model_name}...")
-        self.bert = AutoModel.from_pretrained(model_name)
+        self.bert = AutoModel.from_pretrained(
+            model_name,
+            trust_remote_code=False,
+            use_safetensors=True,
+        )
         
         if freeze_encoder:
             print("Freezing encoder parameters.")
