@@ -91,8 +91,8 @@ def train(args):
     model.to(device)
 
     # Datasets
-    # Try loading cached .pt files first
-    data_dir = 'data/tokenized'
+    # Try loading cached .pt files    # Datasets
+    data_dir = f'data/tokenized/{args.model_size}'
     scalar_train_pt = os.path.join(data_dir, 'keico_scalar_train.pt')
     pairs_train_pt = os.path.join(data_dir, 'keico_pairs_train.pt')
     

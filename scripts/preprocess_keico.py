@@ -31,15 +31,30 @@ def map_level_to_scalar(level):
     }
     return mapping.get(level, 0.0)
 
+import argparse
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_size", type=str, default='base', choices=['base', 'large'])
+    args = parser.parse_args()
+
     input_file = "data/unprocessed/keico_corpus.csv"
     output_dir = "data/processed"
-    tokenized_dir = "data/tokenized"
+    # Save tokenized data to model-specific folder
+    tokenized_dir = f"data/tokenized/{args.model_size}"
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(tokenized_dir, exist_ok=True)
 
     print(f"Loading {input_file}...")
     df = pd.read_csv(input_file)
+    
+    # ... (rest of normalization and splitting is same) ...
+    # I need to preserve the middle part. 
+    # Since I can't easily skip lines with replace_file_content without context, 
+    # I will use multi_replace or just rewrite the main function.
+    # Actually, the main function is long.
+    # Let's use multi_replace to inject the arg parsing and update the tokenizer loading.
+
     
     # Columns: 本文, Level, 尊敬語, 謙譲語, 丁寧語, フィールド
     # Rename for easier access
@@ -134,8 +149,12 @@ def main():
     save_jsonl(test_pairs, 'keico_pairs_test.jsonl')
 
     # Tokenize and Cache
-    print("Tokenizing and caching...")
-    tokenizer = AutoTokenizer.from_pretrained('cl-tohoku/bert-base-japanese')
+    print(f"Tokenizing for {args.model_size} and caching...")
+    if args.model_size == 'base':
+        model_name = 'cl-tohoku/bert-base-japanese'
+    else:
+        model_name = 'cl-tohoku/bert-large-japanese'
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
     
     def tokenize_and_save(data, filename, is_pair=False):
         if not data:
