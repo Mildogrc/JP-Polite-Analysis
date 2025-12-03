@@ -6,8 +6,6 @@ channels:
 dependencies:
   - python=3.10
   - pip
-  - pytorch=2.2.2
-  - cpuonly
   - transformers>=4.30.0
   - datasets>=2.12.0
   - scikit-learn>=1.2.0
