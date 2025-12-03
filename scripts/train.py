@@ -62,7 +62,7 @@ def train(args):
 
     # Training Loop
     best_val_loss = float('inf')
-    os.makedirs('checkpoints', exist_ok=True)
+    os.makedirs('models', exist_ok=True)
 
     print("Starting training...")
     for epoch in range(args.epochs):
