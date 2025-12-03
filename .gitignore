@@ -1,0 +1,9 @@
+# User requested ignores
+*.txt
+*.json
+*.jsonl
+data/
+
+# Python standard ignores
+__pycache__/
+*.py[cod]

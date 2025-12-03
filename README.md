@@ -60,6 +60,9 @@ Follow these steps to reproduce the research:
 1.  **Install Dependencies**:
     ```bash
     pip install -r requirements.txt
+    # OR using conda
+    conda env create -f environment.yml
+    conda activate japanal
     ```
 2.  **API Keys**:
     Set your API keys in your environment:
