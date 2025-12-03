@@ -21,7 +21,11 @@ fi
 
 # Determine initial model path
 # Assuming standard naming from Stage-1
-INITIAL_MODEL="models/model_${MODEL_SIZE}_${FREEZE_MODE}.pth"
+if [ "$FREEZE_MODE" == "freeze" ]; then
+    INITIAL_MODEL="models/model_${MODEL_SIZE}_frozen.pth"
+else
+    INITIAL_MODEL="models/model_${MODEL_SIZE}_unfrozen.pth"
+fi
 # If unfreeze, maybe we want to start from the frozen model? 
 # Or maybe the user wants to start from the base BERT?
 # The prompt says "Load Stage-1 model from: model/".
