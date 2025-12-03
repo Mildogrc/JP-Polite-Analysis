@@ -165,8 +165,15 @@ def evaluate(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_size", type=str, default='base', choices=['base', 'large'])
+    parser.add_argument("--model_size", type=str, default=None, choices=['base', 'large'])
     parser.add_argument("--model_path", type=str, required=True, help="Path to Stage-1 model checkpoint")
     
     args = parser.parse_args()
+    
+    if args.model_size is None:
+        if 'large' in args.model_path:
+            args.model_size = 'large'
+        else:
+            args.model_size = 'base'
+            
     evaluate(args)
