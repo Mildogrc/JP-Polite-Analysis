@@ -113,6 +113,17 @@ def train(args):
         pairs_test = CachedPairDataset(pairs_test_pt)
     else:
         print("Error: Cached test datasets not found.")
+
+
+    # Load Validation sets
+    scalar_val_pt = os.path.join(data_dir, 'keico_scalar_val.pt')
+    pairs_val_pt = os.path.join(data_dir, 'keico_pairs_val.pt')
+    
+    if os.path.exists(scalar_val_pt) and os.path.exists(pairs_val_pt):
+        scalar_val = CachedDataset(scalar_val_pt)
+        pairs_val = CachedPairDataset(pairs_val_pt)
+    else:
+        print("Error: Cached validation datasets not found.")
         return
 
     # Dataloaders
@@ -122,6 +133,9 @@ def train(args):
     
     scalar_test_loader = DataLoader(scalar_test, batch_size=batch_size, shuffle=False)
     pairs_test_loader = DataLoader(pairs_test, batch_size=batch_size, shuffle=False)
+    
+    scalar_val_loader = DataLoader(scalar_val, batch_size=batch_size, shuffle=False)
+    pairs_val_loader = DataLoader(pairs_val, batch_size=batch_size, shuffle=False)
 
     # Optimizer
     lr = 1e-4 if args.freeze_encoder else 2e-5
@@ -185,6 +199,43 @@ def train(args):
             
             total_loss += loss.item()
             progress_bar.set_postfix({'loss': loss.item(), 's_loss': loss_scalar.item(), 'r_loss': loss_rank.item()})
+
+        # Validation
+        model.eval()
+        val_mse = 0
+        val_count_s = 0
+        val_correct_pairs = 0
+        val_count_p = 0
+        
+        with torch.no_grad():
+            # Scalar Val
+            for batch in scalar_val_loader:
+                ids = batch['input_ids'].to(device)
+                mask = batch['attention_mask'].to(device)
+                target = batch['target'].to(device)
+                
+                scores = model(ids, mask).squeeze()
+                val_mse += mse_loss_fn(scores, target).item() * ids.size(0)
+                val_count_s += ids.size(0)
+            
+            # Pairs Val
+            for batch in pairs_val_loader:
+                less_ids = batch['less_input_ids'].to(device)
+                less_mask = batch['less_attention_mask'].to(device)
+                more_ids = batch['more_input_ids'].to(device)
+                more_mask = batch['more_attention_mask'].to(device)
+                
+                s_less = model(less_ids, less_mask).squeeze()
+                s_more = model(more_ids, more_mask).squeeze()
+                
+                correct = (s_more > s_less).float().sum().item()
+                val_correct_pairs += correct
+                val_count_p += less_ids.size(0)
+        
+        avg_val_mse = val_mse / val_count_s if val_count_s > 0 else 0
+        avg_val_acc = val_correct_pairs / val_count_p if val_count_p > 0 else 0
+        
+        print(f"Epoch {epoch+1} Validation: Scalar MSE = {avg_val_mse:.4f}, Ranking Acc = {avg_val_acc:.4f}")
 
     # Save Refined Model
     output_dir = "refined_model"
